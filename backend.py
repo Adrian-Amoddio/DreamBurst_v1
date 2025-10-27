@@ -7,7 +7,7 @@ import httpx
 
 
 # load .env so API keys can be accessed
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), "..", "..", ".env"))
+load_dotenv()
 
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 STABILITY_API_KEY = os.getenv("STABILITY_API_KEY")
