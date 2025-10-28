@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+httpx
+python-dotenv
+pillow
+scikit-learn
+numpy
+scikit-image
