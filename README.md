@@ -178,7 +178,7 @@ DreamBurst demonstrates how I approach building software:
 - I build systems that are **modular**, **extendable**, and **maintainable**.  
 - I enjoy working with **AI**, **image processing**, **creative tools**, and **full-stack systems**.  
 - I care about **clean UX**, **technical clarity**, and tools that solve real problems.  
-- Every part of this project — MCP, FastAPI, React, scikit-image — was chosen to show end-to-end engineering ability, not just small isolated scripts.
+- Every part of this project was chosen to show end-to-end engineering ability, not just small isolated scripts.
 
 If you'd like to discuss the this project or my experience with me, feel free to reach out.
 
