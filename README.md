@@ -2,6 +2,8 @@
 
 **Creative concept → Brief → Image batch → Palette & look metrics**
 
+Stuck in a creative block? Can’t come up with anything new? Deadline looming and still no progress?
+
 DreamBurst is an AI-powered creative ideation tool that uses the Model-Context-Protocol (MCP) to standardise communication between the app and the AI providers it relies on. This means you can easily swap providers with minimal code changes.
 
 DreamBurst is an app that takes a small prompt, idea, theme or concept and expands it into a fully fleshed-out creative brief. You can read the brief, edit it, refine it, and shape it exactly the way you want before moving forward.
@@ -22,7 +24,7 @@ designers prototyping styles
 
 writers and storytellers exploring themes visually
 
-It’s a small, fast creative companion that takes you from rough idea → structured brief → visual concepts → technical look data, all in one workflow.
+It’s a small, fast creative companion that takes you from rough idea → structured brief → visual concepts → technical look data, all in one workflow and get you unstuck from creative block when you need it the most.
 
 ---
 
