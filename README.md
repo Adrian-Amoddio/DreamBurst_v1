@@ -37,7 +37,7 @@ Users pick the strongest concept image to define the project’s visual identity
 ---
 
 ### **4. Hero Image + Color Palette + Look Metrics**
-![palette](ui-screenshots/LookMetrics_01_v1.png)
+![palette](ui-screenshots/LookMetrics_ColorPalette_01_v1.png)
 
 DreamBurst performs:
 - **5-color palette extraction**  
