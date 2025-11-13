@@ -109,7 +109,7 @@ cd .\mcp
 $env:OPENAI_API_KEY = "sk-..."   # required for brief tool
 .\start_mcp.ps1
 
-
+```
 
 ---
 
