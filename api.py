@@ -6,13 +6,14 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from .providers.brief_openai import generate_brief
-from .providers.image_stability import generate_images
-from .providers.smart_palette import extract_palette
-
-
+from backend.providers.brief_openai import generate_brief
+from backend.providers.image_stability import generate_images
+from backend.providers.smart_palette import extract_palette
 
 app = FastAPI(title="DreamBurst API")
+
+# ... keep the rest of your code unchanged ...
+
 
 # Allow local frontend
 app.add_middleware(

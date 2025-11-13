@@ -1,0 +1,12 @@
+{
+  "tools": {
+    "brief.generate":   { "provider": "brief_python" },
+    "image.generate":   { "provider": "image_python" },
+    "palette.extract":  { "provider": "palette_python" }
+  },
+  "providers": {
+    "brief_python":   { "type": "brief",   "url": "http://127.0.0.1:8000/initial_prompt" },
+    "image_python":   { "type": "image",   "url": "http://127.0.0.1:8000/image_batch" },
+    "palette_python": { "type": "palette", "url": "http://127.0.0.1:8000/palette" }
+  }
+}
