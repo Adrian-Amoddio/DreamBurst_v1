@@ -1,48 +1,66 @@
 ﻿// mcp/src/tools/brief.js
 const axios = require("axios");
 
-/**
- * Generate a concise creative brief using OpenAI.
- * Returns: { brief: string }
- */
-module.exports = async function handleBriefGenerate({ prompt }) {
-  const key = process.env.OPENAI_API_KEY;
-  if (!key) throw new Error("Missing OPENAI_API_KEY");
+const OPENAI_URL = "https://api.openai.com/v1/chat/completions";
+const OPENAI_MODEL = "gpt-4o-mini";
+
+async function generateBrief({ prompt }) {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY is not set");
+  }
+
+  if (!prompt || !prompt.trim()) {
+    throw new Error("Prompt is required to generate a brief");
+  }
 
   try {
-    const r = await axios.post(
-      "https://api.openai.com/v1/chat/completions",
+    const response = await axios.post(
+      OPENAI_URL,
       {
-        model: "gpt-4o-mini",
+        model: OPENAI_MODEL,
         messages: [
-          { role: "system", content: "You turn loose ideas into concise, practical creative briefs." },
+          {
+            role: "system",
+            content:
+              "You turn loose creative ideas into concise, practical creative briefs that are easy for designers and directors to use.",
+          },
           {
             role: "user",
-            content:
-              `Create a six-bullet creative brief for this concept:\n\n${prompt}\n\n` +
-              "Bullets should cover: Goal, Audience, Tone, Visual Style, Color/Lighting, Constraints."
-          }
+            content: [
+              "Write a six-bullet creative brief for this concept:",
+              "",
+              prompt,
+              "",
+              "The bullets must cover: Goal, Audience, Tone, Visual Style, Colour/Lighting, and any Constraints.",
+            ].join("\n"),
+          },
         ],
         max_tokens: 300,
         temperature: 0.6,
       },
       {
         headers: {
-          Authorization: `Bearer ${key}`,
+          Authorization: `Bearer ${apiKey}`,
           "Content-Type": "application/json",
         },
         timeout: 30_000,
       }
     );
 
-    const brief = r.data?.choices?.[0]?.message?.content?.trim() || "(no content)";
+    const brief =
+      response.data?.choices?.[0]?.message?.content?.trim() || "";
+
     return { brief };
   } catch (err) {
-    const msg =
+    const details =
       err.response?.data?.error?.message ||
       err.response?.data?.message ||
       err.message ||
-      "OpenAI request failed";
-    throw new Error(`brief.generate: ${msg}`);
+      "Unknown error from OpenAI";
+
+    throw new Error(`brief.generate failed: ${details}`);
   }
-};
+}
+
+module.exports = generateBrief;

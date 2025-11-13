@@ -1,8 +1,8 @@
-// DreamBurst MCP - JavaScript (CJS) using low-level Server API + schema shims
+// DreamBurst MCP server (CommonJS)
 require("dotenv").config();
 const path = require("path");
 
-// --- Locate SDK CJS server files ---
+// Resolve the CJS server entry from @modelcontextprotocol/sdk
 const sdkCjsRoot = path.join(
   __dirname,
   "..",
@@ -13,65 +13,87 @@ const sdkCjsRoot = path.join(
   "cjs"
 );
 
-// Load server + stdio directly from cjs
 const { Server } = require(path.join(sdkCjsRoot, "server", "index.js"));
 
 let StdioServerTransport;
 try {
-  ({ StdioServerTransport } = require(path.join(sdkCjsRoot, "server", "stdio.js")));
+  ({ StdioServerTransport } = require(path.join(
+    sdkCjsRoot,
+    "server",
+    "stdio.js"
+  )));
 } catch {
-  ({ StdioServerTransport } = require(path.join(sdkCjsRoot, "server", "stdio", "index.js")));
+  ({ StdioServerTransport } = require(path.join(
+    sdkCjsRoot,
+    "server",
+    "stdio",
+    "index.js"
+  )));
 }
 
-// ---- Schema shims (your SDK wants objects with shape.method.value) ----
+// Minimal schemas  the SDK expects objects with a shape.method.value
 const ListToolsRequestSchema = { shape: { method: { value: "tools/list" } } };
-const CallToolRequestSchema  = { shape: { method: { value: "tools/call" } } };
+const CallToolRequestSchema = { shape: { method: { value: "tools/call" } } };
 
-// ---- Your tool handlers (CommonJS exports) ----
-const handleBriefGenerate = require("./tools/brief");
-const handleImageGenerate = require("./tools/image");
-const handlePaletteExtract = require("./tools/palette");
+// Tool implementations
+const generateBrief = require("./tools/brief");
+const generateConceptImages = require("./tools/image");
+const extractPaletteAndLook = require("./tools/palette");
 
-// ---- Create server ----
+// MCP server instance
 const server = new Server(
   { name: "dreamburst-mcp", version: "1.0.0" },
   { capabilities: { tools: {} } }
 );
 
-// ---- Tools we advertise via tools/list ----
+
+
+// Tool definitions returned via tools/list
 const tools = [
   {
     name: "brief.generate",
-    description: "Generate a creative brief from a user prompt",
+    description: "Generate a creative brief based on a user prompt.",
     inputSchema: {
       type: "object",
-      properties: { prompt: { type: "string" } },
+      properties: {
+        prompt: { type: "string" },
+      },
       required: ["prompt"],
     },
     outputSchema: {
       type: "object",
-      properties: { brief: { type: "string" } },
+      properties: {
+        brief: { type: "string" },
+      },
     },
   },
   {
     name: "image.generate",
-    description: "Generate concept images for a given prompt",
+    description: "Generate a batch of concept images for a prompt.",
     inputSchema: {
       type: "object",
-      properties: { prompt: { type: "string" }, n: { type: "number" } },
+      properties: {
+        prompt: { type: "string" },
+        n: { type: "number" },
+      },
       required: ["prompt"],
     },
     outputSchema: {
       type: "object",
-      properties: { images: { type: "array", items: { type: "string" } } },
+      properties: {
+        images: { type: "array", items: { type: "string" } },
+      },
     },
   },
   {
     name: "palette.extract",
-    description: "Extract a color palette and look metrics from a hero image",
+    description:
+      "Extract a colour palette and look metrics from a selected hero image.",
     inputSchema: {
       type: "object",
-      properties: { image: { type: "string" } },
+      properties: {
+        image: { type: "string" },
+      },
       required: ["image"],
     },
     outputSchema: {
@@ -85,41 +107,47 @@ const tools = [
   },
 ];
 
-// ---- Advertise tools (schema-based) ----
+// tools/list handler
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   return { tools };
 });
 
-// ---- Handle tool calls (schema-based) ----
+// tools/call handler
 server.setRequestHandler(CallToolRequestSchema, async (req) => {
   const { name, arguments: args = {} } = req.params || {};
 
   switch (name) {
     case "brief.generate": {
       const { prompt } = args;
-      if (!prompt) throw new Error("Missing 'prompt'");
-      const out = await handleBriefGenerate({ prompt });
-      return { content: [{ type: "json", json: out }] };
+      if (!prompt) throw new Error("brief.generate: 'prompt' is required");
+
+      const result = await generateBrief({ prompt });
+      return { content: [{ type: "json", json: result }] };
     }
+
     case "image.generate": {
       const { prompt, n } = args;
-      if (!prompt) throw new Error("Missing 'prompt'");
-      const out = await handleImageGenerate({ prompt, n });
-      return { content: [{ type: "json", json: out }] };
+      if (!prompt) throw new Error("image.generate: 'prompt' is required");
+
+      const result = await generateConceptImages({ prompt, n });
+      return { content: [{ type: "json", json: result }] };
     }
+
     case "palette.extract": {
       const { image } = args;
-      if (!image) throw new Error("Missing 'image'");
-      const out = await handlePaletteExtract({ image });
-      return { content: [{ type: "json", json: out }] };
+      if (!image) throw new Error("palette.extract: 'image' is required");
+
+      const result = await extractPaletteAndLook({ image });
+      return { content: [{ type: "json", json: result }] };
     }
+
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
 });
 
-// ---- Start over stdio ----
+// Start the MCP server over stdio
 (async () => {
   await server.connect(new StdioServerTransport());
-  console.log("✅ DreamBurst MCP server running…");
+  console.log("DreamBurst MCP server running over stdio");
 })();

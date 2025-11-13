@@ -1,7 +1,7 @@
 # Usage: .\start_backend.ps1
 $ErrorActionPreference = "Stop"
 
-# Activate venv
+# Activate virtual env
 if (Test-Path ".\.venv\Scripts\Activate.ps1") {
   & ".\.venv\Scripts\Activate.ps1"
 } else {
@@ -9,7 +9,7 @@ if (Test-Path ".\.venv\Scripts\Activate.ps1") {
   & ".\.venv\Scripts\Activate.ps1"
 }
 
-# Install deps (idempotent)
+# Install dependancies (idempotent)
 pip install -U pip wheel
 pip install fastapi uvicorn[standard] python-dotenv requests httpx pillow numpy scipy scikit-image
 

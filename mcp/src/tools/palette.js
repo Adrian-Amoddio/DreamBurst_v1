@@ -1,27 +1,40 @@
 // mcp/src/tools/palette.js
 const axios = require("axios");
 
-const BACKEND_URL = process.env.DREAMBURST_BACKEND_URL || "http://127.0.0.1:8080";
+const BACKEND_URL =
+  process.env.DREAMBURST_BACKEND_URL || "http://127.0.0.1:8080";
+const ENDPOINT = "/palette";
 
-/**
- * Send a single image (data URL/base64) to the backend to extract palette + look metrics.
- * Returns: { palette: string[], look: object, contrastMatrix: object }
- */
-module.exports = async function handlePaletteExtract({ image }) {
-  if (!image) throw new Error("palette.extract: missing 'image'");
+async function extractPaletteAndLook({ image }) {
+  if (!image) {
+    throw new Error("palette.extract: 'image' is required");
+  }
 
   try {
-    const r = await axios.post(
-      `${BACKEND_URL}/palette`,
+    const response = await axios.post(
+      `${BACKEND_URL}${ENDPOINT}`,
       { image },
-      { headers: { "Content-Type": "application/json" }, timeout: 30_000 }
+      {
+        headers: { "Content-Type": "application/json" },
+        timeout: 30_000,
+      }
     );
 
-    const { palette, look, contrastMatrix } = r.data || {};
-    if (!palette) throw new Error("Backend did not return 'palette'");
+    const { palette, look, contrastMatrix } = response.data || {};
+
+    if (!palette) {
+      throw new Error("Backend returned no palette data");
+    }
+
     return { palette, look, contrastMatrix };
   } catch (err) {
-    const msg = err.response?.data?.detail || err.message || "palette failed";
-    throw new Error(`palette.extract: ${msg}`);
+    const details =
+      err.response?.data?.detail ||
+      err.message ||
+      "Unknown error in palette extraction";
+
+    throw new Error(`palette.extract failed: ${details}`);
   }
-};
+}
+
+module.exports = extractPaletteAndLook;

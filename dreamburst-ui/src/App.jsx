@@ -5,124 +5,161 @@ import ImageGallery from "./components/ImageGallery";
 import HeroDisplay from "./components/HeroDisplay";
 import { fetchBrief, fetchImages, fetchPalette } from "./utils/api";
 
+const STEPS = {
+  PROMPT: "prompt",
+  BRIEF: "brief",
+  GALLERY: "gallery",
+  RESULT: "result",
+};
+
 export default function App() {
-  const [step, setStep] = useState("prompt");
+  const [step, setStep] = useState(STEPS.PROMPT);
+
   const [prompt, setPrompt] = useState("");
   const [brief, setBrief] = useState("");
   const [images, setImages] = useState([]);
-  const [hero, setHero] = useState(null);
+  const [heroImage, setHeroImage] = useState(null);
+
   const [palette, setPalette] = useState([]);
-  const [look, setLook] = useState(null);               // 👈 NEW: look metrics
-  const [contrastMatrix, setContrastMatrix] = useState(null); // 👈 optional
-  const [loading, setLoading] = useState({ brief: false, images: false, palette: false });
+  const [lookMetrics, setLookMetrics] = useState(null);
+  const [contrastMatrix, setContrastMatrix] = useState(null);
+
+  const [loading, setLoading] = useState({
+    brief: false,
+    images: false,
+    palette: false,
+  });
+
   const [error, setError] = useState("");
 
-  // --- Actions ---
+  const setLoadingFlag = (key, value) =>
+    setLoading((prev) => ({ ...prev, [key]: value }));
+
   const handlePromptSubmit = async (promptText) => {
+    setError("");
+    if (!promptText?.trim()) return;
+
     try {
-      setLoading((l) => ({ ...l, brief: true }));
+      setLoadingFlag("brief", true);
       const data = await fetchBrief(promptText);
-      setBrief(data.brief);
+
       setPrompt(promptText);
-      setStep("brief");
+      setBrief(data.brief || "");
+      setStep(STEPS.BRIEF);
     } catch (err) {
-      setError("Brief failed: " + err.message);
+      setError(err?.message || "Failed to generate brief.");
     } finally {
-      setLoading((l) => ({ ...l, brief: false }));
+      setLoadingFlag("brief", false);
     }
   };
 
   const handleGenerateImages = async () => {
+    if (!brief?.trim()) return;
+
     try {
-      setLoading((l) => ({ ...l, images: true }));
+      setLoadingFlag("images", true);
       const data = await fetchImages(brief, 6);
-      setImages(data.images);
-      setStep("gallery");
+
+      setImages(data.images || []);
+      setStep(STEPS.GALLERY);
     } catch (err) {
-      setError("Image generation failed: " + err.message);
+      setError(err?.message || "Failed to generate images.");
     } finally {
-      setLoading((l) => ({ ...l, images: false }));
+      setLoadingFlag("images", false);
     }
   };
 
   const handleHeroSelect = (src) => {
-    setHero(src);
-    setStep("result");
+    if (!src) return;
+    setHeroImage(src);
+    setStep(STEPS.RESULT);
   };
 
   useEffect(() => {
-    const runPalette = async () => {
-      if (!hero) return;
+    const runPaletteExtraction = async () => {
+      if (!heroImage) return;
+
+      setError("");
       try {
-        setLoading((l) => ({ ...l, palette: true }));
-        const data = await fetchPalette(hero);
+        setLoadingFlag("palette", true);
+        const data = await fetchPalette(heroImage);
 
-        // Existing palette
         setPalette(data.palette || []);
-
-        // NEW: look + contrast matrix if backend returns them
-        setLook(data.look || null);
+        setLookMetrics(data.look || null);
         setContrastMatrix(data.contrastMatrix || null);
       } catch (err) {
-        setError("Palette extraction failed: " + err.message);
+        setError(err?.message || "Failed to analyse hero image.");
       } finally {
-        setLoading((l) => ({ ...l, palette: false }));
+        setLoadingFlag("palette", false);
       }
     };
-    runPalette();
-  }, [hero]);
+
+    runPaletteExtraction();
+  }, [heroImage]);
 
   const handleRestart = () => {
     setPrompt("");
     setBrief("");
     setImages([]);
-    setHero(null);
+    setHeroImage(null);
     setPalette([]);
-    setLook(null);
+    setLookMetrics(null);
     setContrastMatrix(null);
     setError("");
-    setStep("prompt");
+    setStep(STEPS.PROMPT);
   };
 
-  // --- Render ---
   return (
-    <div style={{ maxWidth: 900, margin: "40px auto", fontFamily: "system-ui, sans-serif" }}>
-      <h1>DreamBurst Studio</h1>
-      <p>From idea → creative brief → concept images → hero image + palette</p>
+    <div className="min-h-screen bg-slate-950 text-slate-100">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <header className="mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
+            DreamBurst Studio
+          </h1>
+          <p className="mt-2 text-sm text-slate-300 max-w-xl">
+            Take a rough idea and push it through: prompt → creative brief →
+            concept batch → hero image → colour palette + look metrics.
+          </p>
+        </header>
 
-      {error && <p style={{ color: "crimson" }}>{error}</p>}
+        {error && (
+          <div className="mb-4 rounded-xl border border-red-500/60 bg-red-500/10 px-4 py-3 text-sm">
+            {error}
+          </div>
+        )}
 
-      {step === "prompt" && (
-        <PromptInput loading={loading.brief} onSubmit={handlePromptSubmit} />
-      )}
+        {step === STEPS.PROMPT && (
+          <PromptInput loading={loading.brief} onSubmit={handlePromptSubmit} />
+        )}
 
-      {step === "brief" && (
-        <BriefEditor
-          brief={brief}
-          setBrief={setBrief}
-          onGenerateImages={handleGenerateImages}
-          loading={loading.images}
-        />
-      )}
+        {step === STEPS.BRIEF && (
+          <BriefEditor
+            brief={brief}
+            setBrief={setBrief}
+            onGenerateImages={handleGenerateImages}
+            loading={loading.images}
+          />
+        )}
 
-      {step === "gallery" && (
-        <ImageGallery
-          images={images}
-          onSelectHero={handleHeroSelect}
-          loading={loading.images}
-        />
-      )}
+        {step === STEPS.GALLERY && (
+          <ImageGallery
+            images={images}
+            onSelectHero={handleHeroSelect}
+            loading={loading.images}
+          />
+        )}
 
-      {step === "result" && (
-        <HeroDisplay
-          hero={hero}
-          palette={palette}
-          look={look}                        // 👈 pass look to the display
-          contrastMatrix={contrastMatrix}    // 👈 optional
-          loading={loading.palette}
-          onRestart={handleRestart}
-        />
-      )}
+        {step === STEPS.RESULT && (
+          <HeroDisplay
+            hero={heroImage}
+            palette={palette}
+            look={lookMetrics}
+            contrastMatrix={contrastMatrix}
+            loading={loading.palette}
+            onRestart={handleRestart}
+          />
+        )}
+      </main>
     </div>
   );
 }
