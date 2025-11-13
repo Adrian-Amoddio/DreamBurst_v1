@@ -4,9 +4,25 @@
 
 DreamBurst is an AI-powered creative ideation tool that uses the Model-Context-Protocol (MCP) to standardise communication between the app and the AI providers it relies on. This means you can easily swap providers with minimal code changes.
 
-DreamBurst is designed for creatives in marketing, filmmaking, and story development. The user provides an initial theme, idea, or prompt. The system expands it into a full creative brief using the OpenAI API. This brief can be edited, refined, or used as inspiration for developing a campaign or storyline.
+DreamBurst is an app that takes a small prompt, idea, theme or concept and expands it into a fully fleshed-out creative brief. You can read the brief, edit it, refine it, and shape it exactly the way you want before moving forward.
 
-Once the brief is ready, it is sent to Stability AI, which generates a batch of six concept images representing the tone, themes, or core message. The user selects the strongest image, and DreamBurst extracts colour palette data and aesthetic metrics using scikit-image. These metrics can be used to create a cohesive visual identity across an entire campaign.
+From there, DreamBurst generates six concept images that reflect the tone, message, visual style, and ideas inside your brief. Pick a single hero image and DreamBurst will break it down into colour metrics, palette data, white balance values, contrast ratios, dynamic range, and other look-development information.
+
+Creatives can use this to recreate the look in real life whether that means adjusting colour temperature in a studio, selecting matching hex colours in Photoshop, briefing designers on dominant hues and lighting, or maintaining visual continuity across a campaign.
+
+DreamBurst is ideal for:
+
+marketing teams shaping campaign identity
+
+filmmakers developing visual direction
+
+photographers exploring mood and colour
+
+designers prototyping styles
+
+writers and storytellers exploring themes visually
+
+It’s a small, fast creative companion that takes you from rough idea → structured brief → visual concepts → technical look data, all in one workflow.
 
 ---
 
